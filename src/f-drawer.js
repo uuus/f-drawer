@@ -3448,7 +3448,7 @@
   LitElement.render = render$1;
 
   function _templateObject() {
-    var data = _taggedTemplateLiteralLoose(["\n  <div>HELLO ", " F-DRAWER!</div>\n  "]);
+    var data = _taggedTemplateLiteralLoose(["\n  <div>\n    <div class=\"trigger\">\n      <span></span>\n      <span></span>\n      <span></span>\n    </div>\n    HELLO ", " F-DRAWER!\n  </div>\n  "]);
 
     _templateObject = function _templateObject() {
       return data;
@@ -3489,7 +3489,7 @@
     }
   }
 
-  var css = "div {\n  background-color: #f88379;\n}\n";
+  var css = "div {\n  background-color: #f88379;\n}\n\n.trigger {\n  display: block;\n  position: relative;\n  width: 50px;\n  height: 50px;\n}\n\n.trigger span {\n    display: inline-block;\n    position: absolute;\n    left: 0;\n    right: 0;\n    width: 80%;\n    height: 3px;\n    margin: 0 auto;\n    background-color: #000;\n    border-radius: 4px;\n    transition: all .4s;\n  }\n\n.trigger span:nth-of-type(1) {\n      top: 25%;\n    }\n\n.trigger span:nth-of-type(2) {\n      top: 50%;\n    }\n\n.trigger span:nth-of-type(3) {\n      bottom: 25%;\n    }\n";
   styleInject(css);
 
   function _templateObject$1() {

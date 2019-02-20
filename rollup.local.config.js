@@ -1,10 +1,12 @@
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs';
-import babel from 'rollup-plugin-babel';
 import postcss from 'rollup-plugin-postcss';
+import babel from 'rollup-plugin-babel';
 import server from 'rollup-plugin-server';
 import livereload from 'rollup-plugin-livereload';
 import filesize from 'rollup-plugin-filesize';
+
+import postcssPlugins from './postcss.plugins.js';
 
 export default {
   input: './src/index.js',
@@ -22,7 +24,7 @@ export default {
     }),
     commonjs(),
     postcss({
-      map: true
+      plugins: postcssPlugins
     }),
     babel({
       // exclude: 'node_modules/**',

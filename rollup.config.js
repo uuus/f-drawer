@@ -4,6 +4,8 @@ import commonjs from 'rollup-plugin-commonjs';
 import babel from 'rollup-plugin-babel';
 import postcss from 'rollup-plugin-postcss';
 
+import postcssPlugins from './postcss.plugins.js';
+
 export default {
   input: './src/index.js',
   output: {
@@ -44,7 +46,7 @@ export default {
       ],
     }),
     postcss({
-      map: false
+      plugins: postcssPlugins
     }),
   ]
 }
