@@ -2,12 +2,15 @@
 import { html } from 'lit-element';
 
 export default self => html`
-  <div>
-    <div class="trigger">
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="trigger" @click="${self.drawerToggle}">
+      <div class="lines">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
-    HELLO ${self.name} F-DRAWER!
-  </div>
+    <div class="nav">
+      <slot></slot>
+    </div>
+    <div class="shade" @click="${self.drawerToggle}"></div>
   `;

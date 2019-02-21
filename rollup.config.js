@@ -20,6 +20,9 @@ export default {
     }),
     terser({
       warnings: true,
+      compress: {
+        drop_console: true
+      },
       mangle: {
         module: true,
       },

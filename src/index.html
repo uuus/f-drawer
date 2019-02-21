@@ -8,7 +8,30 @@
 </head>
 
 <body>
-  <f-drawer></f-drawer>
+  <style>
+    html {
+      height: 100vh;
+      padding-bottom: 100px;
+      background-color: azure;
+    }
+    nav {
+      height: 100vh;
+      padding-top: 60px;
+      color: #fff;
+      background-color: #5f4b8b;
+    }
+  </style>
+  <f-drawer lineHeight="4px" lineWidth="40px" triggerSize="50px" navWidth="80%" closeButton>
+    <nav>
+      <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+      </ul>
+    </nav>
+  </f-drawer>
   <script src="./f-drawer.js"></script>
 </body>
 

@@ -3448,7 +3448,7 @@
   LitElement.render = render$1;
 
   function _templateObject() {
-    var data = _taggedTemplateLiteralLoose(["\n  <div>\n    <div class=\"trigger\">\n      <span></span>\n      <span></span>\n      <span></span>\n    </div>\n    HELLO ", " F-DRAWER!\n  </div>\n  "]);
+    var data = _taggedTemplateLiteralLoose(["\n    <div class=\"trigger\" @click=\"", "\">\n      <div class=\"lines\">\n        <span></span>\n        <span></span>\n        <span></span>\n      </div>\n    </div>\n    <div class=\"nav\">\n      <slot></slot>\n    </div>\n    <div class=\"shade\" @click=\"", "\"></div>\n  "]);
 
     _templateObject = function _templateObject() {
       return data;
@@ -3457,7 +3457,7 @@
     return data;
   }
   var template = (function (self) {
-    return html(_templateObject(), self.name);
+    return html(_templateObject(), self.drawerToggle, self.drawerToggle);
   });
 
   function styleInject(css, ref) {
@@ -3489,11 +3489,11 @@
     }
   }
 
-  var css = "div {\n  background-color: #f88379;\n}\n\n.trigger {\n  display: block;\n  position: relative;\n  width: 50px;\n  height: 50px;\n}\n\n.trigger span {\n    display: inline-block;\n    position: absolute;\n    left: 0;\n    right: 0;\n    width: 80%;\n    height: 3px;\n    margin: 0 auto;\n    background-color: #000;\n    border-radius: 4px;\n    transition: all .4s;\n  }\n\n.trigger span:nth-of-type(1) {\n      top: 25%;\n    }\n\n.trigger span:nth-of-type(2) {\n      top: 50%;\n    }\n\n.trigger span:nth-of-type(3) {\n      bottom: 25%;\n    }\n";
+  var css = ":host {\n  display: inline-block;\n  position: fixed;\n  box-sizing: border-box;\n}\n\n.nav {\n  position: fixed;\n  width: 80%;\n  height: 100vh;\n  z-index: 98;\n  background-color: inherit;\n  -webkit-overflow-scrolling: touch;\n  overflow-y: auto;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  box-sizing: border-box;\n  -webkit-transform: translate3d(-100%, 0, 0);\n          transform: translate3d(-100%, 0, 0);\n  transition: -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n.trigger {\n  display: inline-block;\n  position: relative;\n  z-index: 99;\n  width: 30px;\n  height: 30px;\n  background-color: #f88379;\n  opacity: 1;\n  transition: all 0.4s ease;\n}\n\n.trigger span {\n    display: inline-block;\n    position: absolute;\n    left: 0;\n    right: 0;\n    width: 80%;\n    height: 1px;\n    margin: 0 auto;\n    background-color: #000;\n    border-radius: 4px;\n    transition: all 0.3s ease;\n  }\n\n.trigger span:nth-of-type(1) {\n      top: 25%;\n    }\n\n.trigger span:nth-of-type(3) {\n      bottom: 25%;\n    }\n\n.lines {\n  transition: all 0.3s ease;\n}\n\n.shade {\n  position: fixed;\n  background-color: #000000;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  height: 100vh;\n  width: 100vw;\n  opacity: 0;\n  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n:host([open]) .trigger span:nth-of-type(1) {\n        top: 0;\n        bottom: 0;\n        margin: auto;\n        -webkit-transform: rotate(90deg);\n                transform: rotate(90deg);\n      }\n\n:host([open]) .trigger span:nth-of-type(3) {\n        opacity: 0;\n      }\n\n:host([open]) .trigger .lines {\n      -webkit-transform: rotate(45deg);\n              transform: rotate(45deg);\n    }\n\n:host([open]) .nav {\n    -webkit-transform: none;\n            transform: none;\n  }\n\n:host([open]) .shade {\n    visibility: visible;\n    z-index: 97;\n    opacity: 0.4;\n  }\n";
   styleInject(css);
 
   function _templateObject$1() {
-    var data = _taggedTemplateLiteralLoose(["\n      <style>\n        ", "\n      </style>\n      ", "\n    "]);
+    var data = _taggedTemplateLiteralLoose(["\n      <style>\n        ", "\n        .trigger {\n          width: ", ";\n          height: ", ";\n        }\n        .lines {\n          width: ", ";\n          height: ", ";\n        }\n        .lines span {\n          width: ", ";\n          height: ", ";\n        }\n        .lines span:nth-of-type(2) {\n          top: calc(50% - ", "%);\n        }\n        .nav {\n          width: ", ";\n        }\n      </style>\n      ", "\n    "]);
 
     _templateObject$1 = function _templateObject() {
       return data;
@@ -3503,12 +3503,62 @@
   }
   var fDrawer = class FDawer extends LitElement {
     static get properties() {
-      return {};
+      return {
+        lineHeight: {
+          type: String,
+          reflect: true
+        },
+        lineWidth: {
+          type: String,
+          reflect: true
+        },
+        triggerSize: {
+          type: String,
+          reflect: true
+        },
+        closeButton: {
+          type: Boolean,
+          reflect: true
+        },
+        navWidth: {
+          type: String,
+          reflect: true
+        }
+      };
     }
 
     constructor() {
+      var _this;
+
       super();
-      this.name = 'YUKI';
+      _this = this;
+      this.isOpen = false;
+      this.drawerMoving = false;
+      this.lineHeight = '1px';
+      this.lineWidth = '80%';
+      this.triggerSize = '30px';
+      this.closeButton = false;
+      this.navWidth = '80%';
+      this.shadeOpacity = 0.4;
+      this.trigger = null;
+      this.shade = null;
+      this.isTouchDevice = 'ontouchstart' in window;
+      this.swipeStart = this.isTouchDevice ? 'touchstart' : 'mousedown';
+      this.swipeMove = this.isTouchDevice ? 'touchmove' : 'mousemove';
+      this.swipeEnd = this.isTouchDevice ? 'touchend' : 'mouseup';
+      this.eventListeners = {};
+
+      this.eventListeners['swipeStartFunc'] = function (e) {
+        return _this.onSwipeStart(e);
+      };
+
+      this.eventListeners['swipeMoveFunc'] = function (e) {
+        return _this.onSwipeMove(e);
+      };
+
+      this.eventListeners['swipeEndFunc'] = function (e) {
+        return _this.onSwipeEnd(e);
+      };
     }
 
     attributeChangedCallback(name, oldval, newval) {
@@ -3517,7 +3567,7 @@
     }
 
     firstUpdated() {
-      var _this = this;
+      var _this2 = this;
 
       return _asyncToGenerator(
       /*#__PURE__*/
@@ -3527,9 +3577,20 @@
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
-                return _this.updateComplete;
+                return _this2.updateComplete;
 
               case 2:
+                _this2.nav = _this2.shadowRoot.querySelector('.nav');
+                _this2.shade = _this2.shadowRoot.querySelector('.shade');
+                _this2.shade.style.visibility = 'hidden';
+
+                _this2.scrollEvent();
+
+                document.addEventListener(_this2.swipeStart, _this2.eventListeners['swipeStartFunc'], {
+                  passive: false
+                });
+
+              case 7:
               case "end":
                 return _context.stop();
             }
@@ -3545,7 +3606,172 @@
     }
 
     render() {
-      return html(_templateObject$1(), css, template(this));
+      return html(_templateObject$1(), css, this.triggerSize, this.triggerSize, this.triggerSize, this.triggerSize, this.lineWidth, this.lineHeight, parseInt(this.lineHeight), this.navWidth, template(this));
+    }
+
+    drawerToggle() {
+      var _this3 = this;
+
+      this.trigger = this.shadowRoot.querySelector('.trigger');
+
+      if (!this.isOpen) {
+        if (!this.closeButton) {
+          this.trigger.style.display = 'none';
+          this.trigger.style.opacity = 0;
+        }
+
+        this.shade.style = '';
+        this.setAttribute('open', '');
+        this.setScrollBlockStyle();
+      } else {
+        if (!this.closeButton) {
+          this.trigger.style.display = 'inline-block';
+          setTimeout(function () {
+            _this3.trigger.style.opacity = 1;
+          }, 500);
+        }
+
+        this.removeAttribute('open');
+        this.removeScrollBlockStyle();
+        setTimeout(function () {
+          _this3.shade.style.visibility = 'hidden';
+        }, 500);
+      }
+
+      this.isOpen = this.isOpen ? false : true;
+      document.removeEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc']);
+      document.removeEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
+    }
+
+    onSwipeStart(e) {
+      if (this.isTouchDevice) {
+        if (e.touches.length > 1 || e.scale && e.scale !== 1) {
+          return;
+        }
+      }
+
+      if (!this.isOpen && e.touches[0].pageX > 30) {
+        return;
+      }
+
+      var offset = {
+        x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
+        y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+      };
+      this.startPoint = {
+        x: offset.x,
+        y: offset.y
+      };
+      this.touchEvent(e);
+      document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc']);
+      document.addEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
+    }
+
+    onSwipeMove(e) {
+      var offset = {
+        x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
+        y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+      };
+      this.moveDistance = {
+        x: offset.x - this.startPoint.x,
+        y: offset.y - this.startPoint.y
+      };
+      this.drawerMoving = true;
+
+      if (this.isOpen && this.moveDistance.x < 0) {
+        this.nav.style.transition = 'none';
+        this.nav.style.transform = "translate3d(" + this.moveDistance.x + "px, 0, 0)";
+        this.shade.style.transition = 'none';
+        this.shade.style.opacity = this.shadeOpacity + this.moveDistance.x / 700;
+      }
+    }
+
+    onSwipeEnd(e) {
+      if (!this.drawerMoving) {
+        return;
+      }
+
+      if (this.isOpen && this.moveDistance.x > 0) {
+        return;
+      }
+
+      if (Math.abs(this.moveDistance.x) > 50) {
+        this.drawerToggle(e);
+      }
+
+      this.drawerMoving = false;
+      this.isSwipe = false;
+      this.nav.style = '';
+      this.shade.style = '';
+    }
+
+    touchEvent(e) {
+      /**
+       * 通常の二重スクロール防止対応（ios対応）
+       * nav以外のスクロールを禁止する
+       * ただし、navがウィンドウサイズより小さい場合は全面スクロール禁止する
+       * （スクロールする必要ないため）
+       *  (windowより小さけどスクロールさせたい場合は、そのエレメントとって
+       *    stoppropagationすればよい)
+       */
+      if (!this.isOpen) {
+        return;
+      }
+
+      if (e.target === this) {
+        e.preventDefault();
+      } else {
+        var navHeight = this.nav.getBoundingClientRect();
+
+        if (navHeight.height < window.innerHeight) {
+          e.preventDefault();
+        }
+
+        e.stopPropagation();
+      }
+    }
+
+    scrollEvent() {
+      var _this4 = this;
+
+      /**
+       * nav内のスクロールは許可されているが、
+       * 最上部、最下部までスクロールしたあと、さらにスクロールするとbodyが
+       * スクロールしてしまうので最上部最下部では強制的に１だけスクロールさせる
+       */
+      this.nav.addEventListener('scroll', function (event) {
+        var navHeight = e.getBoundingClientRect();
+
+        if (_this4.nav.scrollTop === 0) {
+          _this4.nav.scrollTop = 1;
+        } else if (_this4.nav.scrollTop + navHeight.height === _this4.nav.scrollHeight) {
+          _this4.nav.scrollTop = _this4.nav.scrollTop - 1;
+        }
+      });
+    }
+
+    scrollEvent() {
+      var _this5 = this;
+
+      this.nav.addEventListener('scroll', function (e) {
+        var elementHeight = _this5.nav.getBoundingClientRect();
+
+        if (_this5.nav.scrollTop === 0) {
+          _this5.nav.scrollTop = 1;
+        } else if (_this5.nav.scrollTop + elementHeight.height === _this5.nav.scrollHeight) {
+          _this5.nav.scrollTop = _this5.nav.scrollTop - 1;
+        }
+      });
+    }
+
+    setScrollBlockStyle() {
+      document.querySelector('html').style.overflow = 'hidden';
+      document.querySelector('body').style.overflow = 'hidden';
+    }
+
+    removeScrollBlockStyle() {
+      document.querySelector('html').style.overflow = 'visible';
+      document.querySelector('body').style.overflow = 'visible';
     }
 
   };
