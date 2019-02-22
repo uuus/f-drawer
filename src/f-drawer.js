@@ -3489,7 +3489,7 @@
     }
   }
 
-  var css = ":host {\n  display: inline-block;\n  position: fixed;\n  box-sizing: border-box;\n}\n\n.nav {\n  position: fixed;\n  width: 80%;\n  height: 100vh;\n  z-index: 98;\n  background-color: inherit;\n  -webkit-overflow-scrolling: touch;\n  overflow-y: auto;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  box-sizing: border-box;\n  -webkit-transform: translate3d(-100%, 0, 0);\n          transform: translate3d(-100%, 0, 0);\n  transition: -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n.trigger {\n  display: inline-block;\n  position: relative;\n  z-index: 99;\n  width: 30px;\n  height: 30px;\n  background-color: #f88379;\n  opacity: 1;\n  transition: all 0.4s ease;\n}\n\n.trigger span {\n    display: inline-block;\n    position: absolute;\n    left: 0;\n    right: 0;\n    width: 80%;\n    height: 1px;\n    margin: 0 auto;\n    background-color: #000;\n    border-radius: 4px;\n    transition: all 0.3s ease;\n  }\n\n.trigger span:nth-of-type(1) {\n      top: 25%;\n    }\n\n.trigger span:nth-of-type(3) {\n      bottom: 25%;\n    }\n\n.lines {\n  transition: all 0.3s ease;\n}\n\n.shade {\n  position: fixed;\n  background-color: #000000;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  height: 100vh;\n  width: 100vw;\n  opacity: 0;\n  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n:host([open]) .trigger span:nth-of-type(1) {\n        top: 0;\n        bottom: 0;\n        margin: auto;\n        -webkit-transform: rotate(90deg);\n                transform: rotate(90deg);\n      }\n\n:host([open]) .trigger span:nth-of-type(3) {\n        opacity: 0;\n      }\n\n:host([open]) .trigger .lines {\n      -webkit-transform: rotate(45deg);\n              transform: rotate(45deg);\n    }\n\n:host([open]) .nav {\n    -webkit-transform: none;\n            transform: none;\n  }\n\n:host([open]) .shade {\n    visibility: visible;\n    z-index: 97;\n    opacity: 0.4;\n  }\n";
+  var css = ":host {\n  display: inline-block;\n  position: fixed;\n  box-sizing: border-box;\n}\n\n.nav {\n  position: fixed;\n  width: 80%;\n  height: 100vh;\n  z-index: 98;\n  background-color: inherit;\n  -webkit-overflow-scrolling: touch;\n  overflow-y: auto;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  box-sizing: border-box;\n  -webkit-transform: translate3d(-100%, 0, 0);\n          transform: translate3d(-100%, 0, 0);\n  transition: -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n.trigger {\n  display: inline-block;\n  position: relative;\n  z-index: 99;\n  width: 30px;\n  height: 30px;\n  background-color: #f88379;\n  opacity: 1;\n  transition: all 0.4s ease;\n}\n\n.trigger span {\n    display: inline-block;\n    position: absolute;\n    left: 0;\n    right: 0;\n    width: 80%;\n    height: 1px;\n    margin: 0 auto;\n    background-color: #000;\n    border-radius: 4px;\n    transition: all 0.3s ease;\n  }\n\n.trigger span:nth-of-type(1) {\n      top: 25%;\n    }\n\n.trigger span:nth-of-type(3) {\n      bottom: 25%;\n    }\n\n.lines {\n  transition: all 0.3s ease;\n}\n\n.shade {\n  display: none;\n  position: fixed;\n  background-color: #000000;\n  top: 0;\n  bottom: 0;\n  right: 0;\n  height: 100vh;\n  width: 100vw;\n  opacity: 0;\n  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n:host([open]) .trigger span:nth-of-type(1) {\n        top: 0;\n        bottom: 0;\n        margin: auto;\n        -webkit-transform: rotate(90deg);\n                transform: rotate(90deg);\n      }\n\n:host([open]) .trigger span:nth-of-type(3) {\n        opacity: 0;\n      }\n\n:host([open]) .trigger .lines {\n      -webkit-transform: rotate(45deg);\n              transform: rotate(45deg);\n    }\n\n:host([open]) .nav {\n    -webkit-transform: none;\n            transform: none;\n  }\n\n:host([open]) .shade {\n    display: block;\n    z-index: 97;\n    opacity: 0.4;\n  }\n";
   styleInject(css);
 
   function _templateObject$1() {
@@ -3533,7 +3533,7 @@
       super();
       _this = this;
       this.isOpen = false;
-      this.drawerMoving = false;
+      this.drawerClosing = false;
       this.lineHeight = '1px';
       this.lineWidth = '80%';
       this.triggerSize = '30px';
@@ -3581,14 +3581,10 @@
 
               case 2:
                 _this2.nav = _this2.shadowRoot.querySelector('.nav');
+                _this2.lightNav = _this2.querySelector('nav');
                 _this2.shade = _this2.shadowRoot.querySelector('.shade');
-                _this2.shade.style.visibility = 'hidden';
-
-                _this2.scrollEvent();
-
-                document.addEventListener(_this2.swipeStart, _this2.eventListeners['swipeStartFunc'], {
-                  passive: false
-                });
+                _this2.shade.style.display = 'none';
+                document.addEventListener(_this2.swipeStart, _this2.eventListeners['swipeStartFunc']);
 
               case 7:
               case "end":
@@ -3612,35 +3608,45 @@
     drawerToggle() {
       var _this3 = this;
 
-      this.trigger = this.shadowRoot.querySelector('.trigger');
+      return new Promise(function (resolve) {
+        _this3.trigger = _this3.shadowRoot.querySelector('.trigger');
+        console.log(_this3.isOpen);
 
-      if (!this.isOpen) {
-        if (!this.closeButton) {
-          this.trigger.style.display = 'none';
-          this.trigger.style.opacity = 0;
-        }
+        if (!_this3.isOpen) {
+          if (!_this3.closeButton) {
+            _this3.trigger.style.display = 'none';
+            _this3.trigger.style.opacity = 0;
+          }
 
-        this.shade.style = '';
-        this.setAttribute('open', '');
-        this.setScrollBlockStyle();
-      } else {
-        if (!this.closeButton) {
-          this.trigger.style.display = 'inline-block';
+          _this3.shade.style = '';
+
+          _this3.setAttribute('open', '');
+
+          _this3.setScrollBlockStyle();
+        } else {
+          if (!_this3.closeButton) {
+            _this3.trigger.style.display = 'inline-block';
+            setTimeout(function () {
+              _this3.trigger.style.opacity = 1;
+            }, 500);
+          }
+
+          _this3.removeAttribute('open');
+
+          _this3.removeScrollBlockStyle();
+
           setTimeout(function () {
-            _this3.trigger.style.opacity = 1;
+            _this3.shade.style.display = 'none';
           }, 500);
         }
 
-        this.removeAttribute('open');
-        this.removeScrollBlockStyle();
-        setTimeout(function () {
-          _this3.shade.style.visibility = 'hidden';
-        }, 500);
-      }
-
-      this.isOpen = this.isOpen ? false : true;
-      document.removeEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc']);
-      document.removeEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
+        _this3.isOpen = _this3.isOpen ? false : true;
+        document.removeEventListener(_this3.swipeMove, _this3.eventListeners['swipeMoveFunc'], {
+          passive: false
+        });
+        document.removeEventListener(_this3.swipeEnd, _this3.eventListeners['swipeEndFunc']);
+        resolve();
+      });
     }
 
     onSwipeStart(e) {
@@ -3662,12 +3668,14 @@
         x: offset.x,
         y: offset.y
       };
-      this.touchEvent(e);
-      document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc']);
+      document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], {
+        passive: false
+      });
       document.addEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
     }
 
     onSwipeMove(e) {
+      this.drawerClosing = true;
       var offset = {
         x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
         y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
@@ -3676,9 +3684,13 @@
         x: offset.x - this.startPoint.x,
         y: offset.y - this.startPoint.y
       };
-      this.drawerMoving = true;
+      this.touchNavEvent(e);
 
       if (this.isOpen && this.moveDistance.x < 0) {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+
         this.nav.style.transition = 'none';
         this.nav.style.transform = "translate3d(" + this.moveDistance.x + "px, 0, 0)";
         this.shade.style.transition = 'none';
@@ -3687,7 +3699,7 @@
     }
 
     onSwipeEnd(e) {
-      if (!this.drawerMoving) {
+      if (!this.drawerClosing) {
         return;
       }
 
@@ -3696,7 +3708,7 @@
       }
 
       if (Math.abs(this.moveDistance.x) > 50) {
-        this.drawerToggle(e);
+        this.drawerToggle();
       }
 
       this.drawerMoving = false;
@@ -3705,10 +3717,10 @@
       this.shade.style = '';
     }
 
-    touchEvent(e) {
+    touchNavEvent(e) {
       /**
        * 通常の二重スクロール防止対応（ios対応）
-       * nav以外のスクロールを禁止する
+       * nav内のスクロールを許可する
        * ただし、navがウィンドウサイズより小さい場合は全面スクロール禁止する
        * （スクロールする必要ないため）
        *  (windowより小さけどスクロールさせたい場合は、そのエレメントとって
@@ -3718,20 +3730,25 @@
         return;
       }
 
-      if (e.target === this) {
-        e.preventDefault();
-      } else {
-        var navHeight = this.nav.getBoundingClientRect();
+      if (e.target === this.lightNav) {
+        var navHeight = this.lightNav.getBoundingClientRect();
 
         if (navHeight.height < window.innerHeight) {
-          e.preventDefault();
+          if (e.cancelable) {
+            e.preventDefault();
+          }
         }
 
         e.stopPropagation();
+        this.scrollNavEvent();
+      } else {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
       }
     }
 
-    scrollEvent() {
+    scrollNavEvent() {
       var _this4 = this;
 
       /**
@@ -3739,27 +3756,13 @@
        * 最上部、最下部までスクロールしたあと、さらにスクロールするとbodyが
        * スクロールしてしまうので最上部最下部では強制的に１だけスクロールさせる
        */
-      this.nav.addEventListener('scroll', function (event) {
-        var navHeight = e.getBoundingClientRect();
+      this.nav.addEventListener('scroll', function () {
+        var navHeight = _this4.nav.getBoundingClientRect();
 
         if (_this4.nav.scrollTop === 0) {
           _this4.nav.scrollTop = 1;
         } else if (_this4.nav.scrollTop + navHeight.height === _this4.nav.scrollHeight) {
           _this4.nav.scrollTop = _this4.nav.scrollTop - 1;
-        }
-      });
-    }
-
-    scrollEvent() {
-      var _this5 = this;
-
-      this.nav.addEventListener('scroll', function (e) {
-        var elementHeight = _this5.nav.getBoundingClientRect();
-
-        if (_this5.nav.scrollTop === 0) {
-          _this5.nav.scrollTop = 1;
-        } else if (_this5.nav.scrollTop + elementHeight.height === _this5.nav.scrollHeight) {
-          _this5.nav.scrollTop = _this5.nav.scrollTop - 1;
         }
       });
     }
