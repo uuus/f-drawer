@@ -3448,7 +3448,7 @@
   LitElement.render = render$1;
 
   function _templateObject() {
-    var data = _taggedTemplateLiteralLoose(["\n    <div class=\"trigger\" @click=\"", "\">\n      <div class=\"lines\">\n        <span></span>\n        <span></span>\n        <span></span>\n      </div>\n    </div>\n    <div class=\"nav\">\n      <slot></slot>\n    </div>\n    <div class=\"shade\" @click=\"", "\"></div>\n  "]);
+    var data = _taggedTemplateLiteralLoose(["\n    <div class=\"shade\" @click=\"", "\"></div>\n    <div class=\"trigger\" @click=\"", "\">\n      <div class=\"lines\">\n        <span></span>\n        <span></span>\n        <span></span>\n      </div>\n    </div>\n    <div class=\"nav\">\n      <slot></slot>\n    </div>\n  "]);
 
     _templateObject = function _templateObject() {
       return data;
@@ -3541,6 +3541,8 @@
       this.navWidth = '80%';
       this.shadeOpacity = 0.4;
       this.trigger = null;
+      this.nav = null;
+      this.lightNav = null;
       this.shade = null;
       this.isTouchDevice = 'ontouchstart' in window;
       this.swipeStart = this.isTouchDevice ? 'touchstart' : 'mousedown';
@@ -3558,6 +3560,10 @@
 
       this.eventListeners['swipeEndFunc'] = function (e) {
         return _this.onSwipeEnd(e);
+      };
+
+      this.eventListeners['scrollNavFunc'] = function (e) {
+        return _this.scrollNavEvent(e);
       };
     }
 
@@ -3584,7 +3590,9 @@
                 _this2.lightNav = _this2.querySelector('nav');
                 _this2.shade = _this2.shadowRoot.querySelector('.shade');
                 _this2.shade.style.display = 'none';
-                document.addEventListener(_this2.swipeStart, _this2.eventListeners['swipeStartFunc']);
+                document.addEventListener(_this2.swipeStart, _this2.eventListeners['swipeStartFunc'], {
+                  passive: false
+                });
 
               case 7:
               case "end":
@@ -3601,6 +3609,17 @@
       });
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      console.log('my-element created!');
+    }
+
+    disconnectedCallback() {
+      super.connectedCallback();
+      console.log('my-element turn off!');
+      this.nav.removeEventListener('scroll', this.eventListeners['scrollNavFunc']);
+    }
+
     render() {
       return html(_templateObject$1(), css, this.triggerSize, this.triggerSize, this.triggerSize, this.triggerSize, this.lineWidth, this.lineHeight, parseInt(this.lineHeight), this.navWidth, template(this));
     }
@@ -3610,7 +3629,6 @@
 
       return new Promise(function (resolve) {
         _this3.trigger = _this3.shadowRoot.querySelector('.trigger');
-        console.log(_this3.isOpen);
 
         if (!_this3.isOpen) {
           if (!_this3.closeButton) {
@@ -3656,18 +3674,20 @@
         }
       }
 
-      if (!this.isOpen && e.touches[0].pageX > 30) {
-        return;
-      }
-
       var offset = {
         x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
         y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
       };
+
+      if (!this.isOpen && offset.x > 30) {
+        return;
+      }
+
       this.startPoint = {
         x: offset.x,
         y: offset.y
       };
+      this.touchNavEvent(e);
       document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], {
         passive: false
       });
@@ -3684,7 +3704,6 @@
         x: offset.x - this.startPoint.x,
         y: offset.y - this.startPoint.y
       };
-      this.touchNavEvent(e);
 
       if (this.isOpen && this.moveDistance.x < 0) {
         if (e.cancelable) {
@@ -3698,7 +3717,7 @@
       }
     }
 
-    onSwipeEnd(e) {
+    onSwipeEnd() {
       if (!this.drawerClosing) {
         return;
       }
@@ -3715,17 +3734,10 @@
       this.isSwipe = false;
       this.nav.style = '';
       this.shade.style = '';
+      this.moveDistance = {};
     }
 
     touchNavEvent(e) {
-      /**
-       * 通常の二重スクロール防止対応（ios対応）
-       * nav内のスクロールを許可する
-       * ただし、navがウィンドウサイズより小さい場合は全面スクロール禁止する
-       * （スクロールする必要ないため）
-       *  (windowより小さけどスクロールさせたい場合は、そのエレメントとって
-       *    stoppropagationすればよい)
-       */
       if (!this.isOpen) {
         return;
       }
@@ -3740,7 +3752,7 @@
         }
 
         e.stopPropagation();
-        this.scrollNavEvent();
+        this.nav.addEventListener('scroll', this.eventListeners['scrollNavFunc']);
       } else {
         if (e.cancelable) {
           e.preventDefault();
@@ -3749,22 +3761,13 @@
     }
 
     scrollNavEvent() {
-      var _this4 = this;
+      var navHeight = this.nav.getBoundingClientRect();
 
-      /**
-       * nav内のスクロールは許可されているが、
-       * 最上部、最下部までスクロールしたあと、さらにスクロールするとbodyが
-       * スクロールしてしまうので最上部最下部では強制的に１だけスクロールさせる
-       */
-      this.nav.addEventListener('scroll', function () {
-        var navHeight = _this4.nav.getBoundingClientRect();
-
-        if (_this4.nav.scrollTop === 0) {
-          _this4.nav.scrollTop = 1;
-        } else if (_this4.nav.scrollTop + navHeight.height === _this4.nav.scrollHeight) {
-          _this4.nav.scrollTop = _this4.nav.scrollTop - 1;
-        }
-      });
+      if (this.nav.scrollTop === 0) {
+        this.nav.scrollTop = 1;
+      } else if (this.nav.scrollTop + navHeight.height === this.nav.scrollHeight) {
+        this.nav.scrollTop = this.nav.scrollTop - 1;
+      }
     }
 
     setScrollBlockStyle() {

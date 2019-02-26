@@ -4,7 +4,7 @@ import css from './style.pcss';
 
 const fDrawer = class FDawer extends LitElement {
 
-  static get properties() {
+  static get properties () {
     return {
       lineHeight: { type: String, reflect: true },
       lineWidth: { type: String, reflect: true },
@@ -14,7 +14,7 @@ const fDrawer = class FDawer extends LitElement {
     };
   }
 
-  constructor() {
+  constructor () {
     super();
     this.isOpen = false;
     this.drawerClosing = false;
@@ -25,6 +25,8 @@ const fDrawer = class FDawer extends LitElement {
     this.navWidth = '80%';
     this.shadeOpacity = 0.4;
     this.trigger = null;
+    this.nav = null;
+    this.lightNav = null;
     this.shade = null;
     this.isTouchDevice = 'ontouchstart' in window;
     this.swipeStart = this.isTouchDevice ? 'touchstart' : 'mousedown';
@@ -34,9 +36,10 @@ const fDrawer = class FDawer extends LitElement {
     this.eventListeners['swipeStartFunc'] = e => this.onSwipeStart(e);
     this.eventListeners['swipeMoveFunc'] = e => this.onSwipeMove(e);
     this.eventListeners['swipeEndFunc'] = e => this.onSwipeEnd(e);
+    this.eventListeners['scrollNavFunc'] = e => this.scrollNavEvent(e);
   }
 
-  attributeChangedCallback(name, oldval, newval) {
+  attributeChangedCallback (name, oldval, newval) {
     console.log('attribute change: ', name, newval);
     super.attributeChangedCallback(name, oldval, newval);
   }
@@ -47,15 +50,26 @@ const fDrawer = class FDawer extends LitElement {
     this.lightNav = this.querySelector('nav');
     this.shade = this.shadowRoot.querySelector('.shade');
     this.shade.style.display = 'none';
-    document.addEventListener(this.swipeStart, this.eventListeners['swipeStartFunc']);
+    document.addEventListener(this.swipeStart, this.eventListeners['swipeStartFunc'], { passive: false });
   }
-  updated(changedProperties) {
+
+  updated (changedProperties) {
     changedProperties.forEach((oldValue, propName) => {
       console.log(`${propName} changed. oldValue: ${ oldValue }`);
     });
   }
 
-  render() {
+  connectedCallback () {
+    super.connectedCallback();
+    console.log('inserted f-drawer element in DOM');
+  }
+
+  disconnectedCallback () {
+    super.connectedCallback();
+    this.nav.removeEventListener('scroll', this.eventListeners['scrollNavFunc']);
+  }
+
+  render () {
     return html`
       <style>
         ${ css }
@@ -85,7 +99,6 @@ const fDrawer = class FDawer extends LitElement {
   drawerToggle () {
     return new Promise(resolve => {
       this.trigger = this.shadowRoot.querySelector('.trigger');
-      console.log(this.isOpen);
       if (!this.isOpen) {
         if (!this.closeButton) {
           this.trigger.style.display = 'none';
@@ -120,17 +133,18 @@ const fDrawer = class FDawer extends LitElement {
         return;
       }
     }
-    if (!this.isOpen && e.touches[0].pageX > 30) {
-      return
-    }
     const offset = {
       x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
       y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
     };
+    if (!this.isOpen && offset.x > 30) {
+      return
+    }
     this.startPoint = {
       x: offset.x,
       y: offset.y
     };
+    this.touchNavEvent(e);
     document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], { passive: false });
     document.addEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
   }
@@ -138,14 +152,11 @@ const fDrawer = class FDawer extends LitElement {
   onSwipeMove (e) {
     this.drawerClosing = true;
     const offset = {
-      x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
-      y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+      x: this.isTouchDevice ? e.touches[0].pageX : e.pageX
     };
     this.moveDistance = {
-      x: offset.x - this.startPoint.x,
-      y: offset.y - this.startPoint.y
+      x: offset.x - this.startPoint.x
     };
-    this.touchNavEvent(e);
     if (this.isOpen && this.moveDistance.x < 0) {
       if (e.cancelable) {
         e.preventDefault();
@@ -157,7 +168,7 @@ const fDrawer = class FDawer extends LitElement {
     }
   }
 
-  onSwipeEnd (e) {
+  onSwipeEnd () {
     if (!this.drawerClosing) {
       return
     }
@@ -171,17 +182,10 @@ const fDrawer = class FDawer extends LitElement {
     this.isSwipe = false
     this.nav.style = '';
     this.shade.style = '';
+    this.moveDistance = {};
   }
 
   touchNavEvent (e) {
-    /**
-     * 通常の二重スクロール防止対応（ios対応）
-     * nav内のスクロールを許可する
-     * ただし、navがウィンドウサイズより小さい場合は全面スクロール禁止する
-     * （スクロールする必要ないため）
-     *  (windowより小さけどスクロールさせたい場合は、そのエレメントとって
-     *    stoppropagationすればよい)
-     */
     if (!this.isOpen) {
       return
     }
@@ -193,7 +197,7 @@ const fDrawer = class FDawer extends LitElement {
         }
       }
       e.stopPropagation();
-      this.scrollNavEvent();
+      this.nav.addEventListener('scroll', this.eventListeners['scrollNavFunc']);
     } else {
       if (e.cancelable) {
         e.preventDefault();
@@ -202,19 +206,12 @@ const fDrawer = class FDawer extends LitElement {
   }
 
   scrollNavEvent () {
-    /**
-     * nav内のスクロールは許可されているが、
-     * 最上部、最下部までスクロールしたあと、さらにスクロールするとbodyが
-     * スクロールしてしまうので最上部最下部では強制的に１だけスクロールさせる
-     */
-    this.nav.addEventListener('scroll', () => {
-      const navHeight = this.nav.getBoundingClientRect();
-      if (this.nav.scrollTop === 0) {
-        this.nav.scrollTop = 1;
-      } else if (this.nav.scrollTop + navHeight.height === this.nav.scrollHeight) {
-        this.nav.scrollTop = this.nav.scrollTop - 1;
-      }
-    });
+    const navHeight = this.nav.getBoundingClientRect();
+    if (this.nav.scrollTop === 0) {
+      this.nav.scrollTop = 1;
+    } else if (this.nav.scrollTop + navHeight.height === this.nav.scrollHeight) {
+      this.nav.scrollTop = this.nav.scrollTop - 1;
+    }
   }
 
   setScrollBlockStyle () {
