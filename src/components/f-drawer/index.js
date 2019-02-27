@@ -4,7 +4,7 @@ import css from './style.pcss';
 
 const fDrawer = class FDawer extends LitElement {
 
-  static get properties() {
+  static get properties () {
     return {
       lineHeight: { type: String, reflect: true },
       lineWidth: { type: String, reflect: true },
@@ -14,10 +14,10 @@ const fDrawer = class FDawer extends LitElement {
     };
   }
 
-  constructor() {
+  constructor () {
     super();
     this.isOpen = false;
-    this.drawerMoving = false;
+    this.drawerClosing = false;
     this.lineHeight = '1px';
     this.lineWidth = '80%';
     this.triggerSize = '30px';
@@ -25,6 +25,8 @@ const fDrawer = class FDawer extends LitElement {
     this.navWidth = '80%';
     this.shadeOpacity = 0.4;
     this.trigger = null;
+    this.nav = null;
+    this.lightNav = null;
     this.shade = null;
     this.isTouchDevice = 'ontouchstart' in window;
     this.swipeStart = this.isTouchDevice ? 'touchstart' : 'mousedown';
@@ -34,9 +36,10 @@ const fDrawer = class FDawer extends LitElement {
     this.eventListeners['swipeStartFunc'] = e => this.onSwipeStart(e);
     this.eventListeners['swipeMoveFunc'] = e => this.onSwipeMove(e);
     this.eventListeners['swipeEndFunc'] = e => this.onSwipeEnd(e);
+    this.eventListeners['scrollNavFunc'] = e => this.scrollNavEvent(e);
   }
 
-  attributeChangedCallback(name, oldval, newval) {
+  attributeChangedCallback (name, oldval, newval) {
     console.log('attribute change: ', name, newval);
     super.attributeChangedCallback(name, oldval, newval);
   }
@@ -44,18 +47,29 @@ const fDrawer = class FDawer extends LitElement {
   async firstUpdated () {
     await this.updateComplete;
     this.nav = this.shadowRoot.querySelector('.nav');
+    this.lightNav = this.querySelector('nav');
     this.shade = this.shadowRoot.querySelector('.shade');
-    this.shade.style.visibility = 'hidden';
-    this.scrollEvent();
+    this.shade.style.display = 'none';
     document.addEventListener(this.swipeStart, this.eventListeners['swipeStartFunc'], { passive: false });
   }
-  updated(changedProperties) {
+
+  updated (changedProperties) {
     changedProperties.forEach((oldValue, propName) => {
       console.log(`${propName} changed. oldValue: ${ oldValue }`);
     });
   }
 
-  render() {
+  connectedCallback () {
+    super.connectedCallback();
+    console.log('inserted f-drawer element in DOM');
+  }
+
+  disconnectedCallback () {
+    super.connectedCallback();
+    this.nav.removeEventListener('scroll', this.eventListeners['scrollNavFunc']);
+  }
+
+  render () {
     return html`
       <style>
         ${ css }
@@ -83,31 +97,34 @@ const fDrawer = class FDawer extends LitElement {
   }
 
   drawerToggle () {
-    this.trigger = this.shadowRoot.querySelector('.trigger');
-    if (!this.isOpen) {
-      if (!this.closeButton) {
-        this.trigger.style.display = 'none';
-        this.trigger.style.opacity = 0;
-      }
-      this.shade.style = '';
-      this.setAttribute('open', '');
-      this.setScrollBlockStyle();
-    } else {
-      if (!this.closeButton) {
-        this.trigger.style.display = 'inline-block';
+    return new Promise(resolve => {
+      this.trigger = this.shadowRoot.querySelector('.trigger');
+      if (!this.isOpen) {
+        if (!this.closeButton) {
+          this.trigger.style.display = 'none';
+          this.trigger.style.opacity = 0;
+        }
+        this.shade.style = '';
+        this.setAttribute('open', '');
+        this.setScrollBlockStyle();
+      } else {
+        if (!this.closeButton) {
+          this.trigger.style.display = 'inline-block';
+          setTimeout(() => {
+            this.trigger.style.opacity = 1;
+          }, 500);
+        }
+        this.removeAttribute('open');
+        this.removeScrollBlockStyle();
         setTimeout(() => {
-          this.trigger.style.opacity = 1;
+          this.shade.style.display = 'none';
         }, 500);
       }
-      this.removeAttribute('open');
-      this.removeScrollBlockStyle();
-      setTimeout(() => {
-        this.shade.style.visibility = 'hidden';
-      }, 500);
-    }
-    this.isOpen = this.isOpen ? false : true;
-    document.removeEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc']);
-    document.removeEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
+      this.isOpen = this.isOpen ? false : true;
+      document.removeEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], { passive: false });
+      document.removeEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
+      resolve();
+    });
   }
 
   onSwipeStart (e) {
@@ -116,33 +133,34 @@ const fDrawer = class FDawer extends LitElement {
         return;
       }
     }
-    if (!this.isOpen && e.touches[0].pageX > 30) {
-      return
-    }
     const offset = {
       x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
       y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
     };
+    if (!this.isOpen && offset.x > 30) {
+      return
+    }
     this.startPoint = {
       x: offset.x,
       y: offset.y
     };
-    this.touchEvent(e);
-    document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc']);
+    this.touchNavEvent(e);
+    document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], { passive: false });
     document.addEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
   }
 
   onSwipeMove (e) {
+    this.drawerClosing = true;
     const offset = {
-      x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
-      y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+      x: this.isTouchDevice ? e.touches[0].pageX : e.pageX
     };
     this.moveDistance = {
-      x: offset.x - this.startPoint.x,
-      y: offset.y - this.startPoint.y
+      x: offset.x - this.startPoint.x
     };
-    this.drawerMoving = true;
     if (this.isOpen && this.moveDistance.x < 0) {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
       this.nav.style.transition = 'none';
       this.nav.style.transform = `translate3d(${ this.moveDistance.x }px, 0, 0)`;
       this.shade.style.transition = 'none';
@@ -150,70 +168,50 @@ const fDrawer = class FDawer extends LitElement {
     }
   }
 
-  onSwipeEnd (e) {
-    if (!this.drawerMoving) {
+  onSwipeEnd () {
+    if (!this.drawerClosing) {
       return
     }
     if (this.isOpen && this.moveDistance.x > 0) {
       return
     }
     if (Math.abs(this.moveDistance.x) > 50) {
-      this.drawerToggle(e);
+      this.drawerToggle();
     }
     this.drawerMoving = false;
     this.isSwipe = false
     this.nav.style = '';
     this.shade.style = '';
+    this.moveDistance = {};
   }
 
-  touchEvent (e) {
-    /**
-     * 通常の二重スクロール防止対応（ios対応）
-     * nav以外のスクロールを禁止する
-     * ただし、navがウィンドウサイズより小さい場合は全面スクロール禁止する
-     * （スクロールする必要ないため）
-     *  (windowより小さけどスクロールさせたい場合は、そのエレメントとって
-     *    stoppropagationすればよい)
-     */
+  touchNavEvent (e) {
     if (!this.isOpen) {
       return
     }
-    if (e.target === this) {
-      e.preventDefault();
-    } else {
-      const navHeight = this.nav.getBoundingClientRect();
+    if (e.target === this.lightNav) {
+      const navHeight = this.lightNav.getBoundingClientRect();
       if (navHeight.height < window.innerHeight) {
-        e.preventDefault();
+        if (e.cancelable) {
+          e.preventDefault();
+        }
       }
       e.stopPropagation();
+      this.nav.addEventListener('scroll', this.eventListeners['scrollNavFunc']);
+    } else {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
     }
   }
 
-  scrollEvent () {
-    /**
-     * nav内のスクロールは許可されているが、
-     * 最上部、最下部までスクロールしたあと、さらにスクロールするとbodyが
-     * スクロールしてしまうので最上部最下部では強制的に１だけスクロールさせる
-     */
-    this.nav.addEventListener('scroll', event => {
-      const navHeight = e.getBoundingClientRect()
-      if (this.nav.scrollTop === 0) {
-        this.nav.scrollTop = 1;
-      } else if (this.nav.scrollTop + navHeight.height === this.nav.scrollHeight) {
-        this.nav.scrollTop = this.nav.scrollTop - 1;
-      }
-    });
-  }
-
-  scrollEvent () {
-    this.nav.addEventListener('scroll', e => {
-      const elementHeight = this.nav.getBoundingClientRect();
-      if (this.nav.scrollTop === 0) {
-        this.nav.scrollTop = 1;
-      } else if (this.nav.scrollTop + elementHeight.height === this.nav.scrollHeight) {
-        this.nav.scrollTop = this.nav.scrollTop - 1
-      }
-    })
+  scrollNavEvent () {
+    const navHeight = this.nav.getBoundingClientRect();
+    if (this.nav.scrollTop === 0) {
+      this.nav.scrollTop = 1;
+    } else if (this.nav.scrollTop + navHeight.height === this.nav.scrollHeight) {
+      this.nav.scrollTop = this.nav.scrollTop - 1;
+    }
   }
 
   setScrollBlockStyle () {
