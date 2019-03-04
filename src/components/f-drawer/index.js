@@ -134,17 +134,15 @@ const fDrawer = class FDawer extends LitElement {
       }
     }
     const offset = {
-      x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
-      y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+      x: this.isTouchDevice ? e.touches[0].pageX : e.pageX
     };
     if (!this.isOpen && offset.x > 30) {
       return
     }
     this.startPoint = {
-      x: offset.x,
-      y: offset.y
+      x: offset.x
     };
-    this.touchNavEvent(e);
+    // this.touchNavEvent(e);
     document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], { passive: false });
     document.addEventListener(this.swipeEnd, this.eventListeners['swipeEndFunc']);
   }
@@ -157,6 +155,7 @@ const fDrawer = class FDawer extends LitElement {
     this.moveDistance = {
       x: offset.x - this.startPoint.x
     };
+    this.touchNavEvent(e);
     if (this.isOpen && this.moveDistance.x < 0) {
       if (e.cancelable) {
         e.preventDefault();
