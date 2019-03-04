@@ -3448,7 +3448,7 @@
   LitElement.render = render$1;
 
   function _templateObject() {
-    var data = _taggedTemplateLiteralLoose(["\n    <div class=\"shade\" @click=\"", "\"></div>\n    <div class=\"trigger\" @click=\"", "\">\n      <div class=\"lines\">\n        <span></span>\n        <span></span>\n        <span></span>\n      </div>\n    </div>\n    <div class=\"nav\">\n      <slot></slot>\n    </div>\n  "]);
+    var data = _taggedTemplateLiteralLoose(["\n    <div class=\"trigger\" @click=\"", "\">\n      <div class=\"lines\">\n        <span></span>\n        <span></span>\n        <span></span>\n      </div>\n    </div>\n    <div class=\"nav\">\n      <slot></slot>\n    </div>\n    <div class=\"shade\" @click=\"", "\"></div>\n  "]);
 
     _templateObject = function _templateObject() {
       return data;
@@ -3611,12 +3611,11 @@
 
     connectedCallback() {
       super.connectedCallback();
-      console.log('my-element created!');
+      console.log('inserted f-drawer element in DOM');
     }
 
     disconnectedCallback() {
       super.connectedCallback();
-      console.log('my-element turn off!');
       this.nav.removeEventListener('scroll', this.eventListeners['scrollNavFunc']);
     }
 
@@ -3675,8 +3674,7 @@
       }
 
       var offset = {
-        x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
-        y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+        x: this.isTouchDevice ? e.touches[0].pageX : e.pageX
       };
 
       if (!this.isOpen && offset.x > 30) {
@@ -3684,10 +3682,9 @@
       }
 
       this.startPoint = {
-        x: offset.x,
-        y: offset.y
-      };
-      this.touchNavEvent(e);
+        x: offset.x
+      }; // this.touchNavEvent(e);
+
       document.addEventListener(this.swipeMove, this.eventListeners['swipeMoveFunc'], {
         passive: false
       });
@@ -3697,13 +3694,12 @@
     onSwipeMove(e) {
       this.drawerClosing = true;
       var offset = {
-        x: this.isTouchDevice ? e.touches[0].pageX : e.pageX,
-        y: this.isTouchDevice ? e.touches[0].pageY : e.pageY
+        x: this.isTouchDevice ? e.touches[0].pageX : e.pageX
       };
       this.moveDistance = {
-        x: offset.x - this.startPoint.x,
-        y: offset.y - this.startPoint.y
+        x: offset.x - this.startPoint.x
       };
+      this.touchNavEvent(e);
 
       if (this.isOpen && this.moveDistance.x < 0) {
         if (e.cancelable) {
